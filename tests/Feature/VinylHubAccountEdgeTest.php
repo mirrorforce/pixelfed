@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\DeletePipeline\DeleteAccountPipeline;
 use App\Listeners\AuthLogin;
 use App\Models\Profile;
 use App\Models\User;
@@ -10,6 +11,7 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
@@ -226,6 +228,46 @@ it('suspends, resumes, and deletes by stable service mapping', function () {
     edgeRequest($this, 'postJson', '/api/v1/internal/vinylhub/account-edge/delete-status', [
         'external_subject' => $payload['external_subject'],
     ])->assertOk()->assertJsonPath('lifecycle', 'delete_requested');
+});
+
+it('retains terminal delete readback after native deletion and session removal', function () {
+    $subject = 'oneid-subject-terminal-delete';
+    $payload = [
+        'external_subject' => $subject,
+        'technical_handle' => 'vhterminaldelete',
+        'technical_email' => 'vhterminaldelete@community.invalid',
+    ];
+
+    $provision = edgeRequest($this, 'postJson', '/api/v1/internal/vinylhub/account-edge/provision', $payload)->assertOk();
+    $user = User::findOrFail($provision->json('user_id'));
+
+    $this->actingAs($user);
+    expect(auth()->check())->toBeTrue();
+
+    edgeRequest($this, 'postJson', '/api/v1/internal/vinylhub/account-edge/delete', [
+        'external_subject' => $subject,
+    ])->assertOk()->assertJsonPath('lifecycle', 'delete_requested');
+
+    auth()->logout();
+    expect(auth()->check())->toBeFalse();
+
+    Redis::shouldReceive('zcard')->andReturn(0);
+    Redis::shouldReceive('del')->andReturn(1);
+    (new DeleteAccountPipeline($user->fresh()))->handle();
+
+    $user->refresh();
+    $profile = Profile::withTrashed()->whereUserId($user->id)->firstOrFail();
+
+    expect($user->status)->toBe('deleted');
+    expect($profile->deleted_at)->not->toBeNull();
+    expect(UserOidcMapping::where('oidc_id', $subject)->count())->toBe(1);
+
+    edgeRequest($this, 'postJson', '/api/v1/internal/vinylhub/account-edge/delete-status', [
+        'external_subject' => $subject,
+    ])->assertOk()
+        ->assertJsonPath('lifecycle', 'deleted')
+        ->assertJsonPath('projection_exists', true)
+        ->assertJsonPath('repair_required', false);
 });
 
 it('uses the shared initializer for ordinary login repair', function () {
