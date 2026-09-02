@@ -30,6 +30,7 @@ class VinylHubStatusOperationService
         $this->assertActiveAccount($user, $profile);
         $payload = $this->validatePayload($payload);
         $this->assertCanPost($user);
+        $this->assertDailyComposeLimit($user);
         AccountService::setLastActive($user->id);
 
         try {
@@ -187,6 +188,7 @@ class VinylHubStatusOperationService
                 : ($payload['visibility'] ?? 'public')
         );
         $caption = trim((string) ($payload['status'] ?? ''));
+        $caption = $caption === '' ? '' : strip_tags($caption);
         $cw = $profile->cw == true || (bool) ($payload['sensitive'] ?? false);
 
         $status = new Status([
@@ -244,6 +246,22 @@ class VinylHubStatusOperationService
         Cache::forget('_api:statuses:recent_9:'.$status->profile_id);
         Cache::forget('profile:status_count:'.$status->profile_id);
         Cache::forget('profile:embed:'.$status->profile_id);
+        Cache::forget('compose:rate-limit:store:'.$user->id);
+    }
+
+    protected function assertDailyComposeLimit(User $user): void
+    {
+        $limitKey = 'compose:rate-limit:store:'.$user->id;
+        $limitReached = Cache::remember($limitKey, now()->addMinutes(15), function () use ($user) {
+            $minId = SnowflakeService::byDate(now()->subDays(1));
+            $dailyLimit = Status::whereProfileId($user->profile_id)
+                ->where('id', '>', $minId)
+                ->count();
+
+            return $dailyLimit >= 1000;
+        });
+
+        abort_if($limitReached === true, 429);
     }
 
     protected function isUniqueConstraint(QueryException $exception): bool

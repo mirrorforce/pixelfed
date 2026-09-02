@@ -90,6 +90,47 @@ it('creates one durable accepted result and reuses it for the same user and key'
     expect(VinylHubStatusOperation::where('profile_id', $user->profile_id)->count())->toBe(1);
 });
 
+it('sanitizes captions with the native strip_tags rule', function () {
+    $subject = 'operation-caption-subject';
+    $user = operationAccount($subject, 'vhoperationcaption');
+
+    $created = createOperationRequest($this, [
+        'external_subject' => $subject,
+        'operation_key' => 'caption-key',
+        'status' => '<p>Visible <strong>caption</strong></p><script>alert(1)</script>',
+    ])->assertOk();
+
+    expect(Status::where('profile_id', $user->profile_id)
+        ->findOrFail($created->json('status_id'))
+        ->caption)->toBe('Visible captionalert(1)');
+});
+
+it('enforces the native daily compose limit and invalidates its cache after success', function () {
+    $subject = 'operation-limit-subject';
+    $user = operationAccount($subject, 'vhoperationlimit');
+    Status::factory()->count(1000)->create([
+        'profile_id' => $user->profile_id,
+    ]);
+
+    createOperationRequest($this, [
+        'external_subject' => $subject,
+        'operation_key' => 'over-limit-key',
+        'status' => 'Must be rejected',
+    ])->assertStatus(429);
+
+    expect(Status::where('profile_id', $user->profile_id)->count())->toBe(1000);
+    expect(VinylHubStatusOperation::where('profile_id', $user->profile_id)->count())->toBe(0);
+
+    $user = operationAccount('operation-limit-success-subject', 'vhoperationlimitsuccess');
+    createOperationRequest($this, [
+        'external_subject' => 'operation-limit-success-subject',
+        'operation_key' => 'under-limit-key',
+        'status' => 'Accepted after limit check',
+    ])->assertOk();
+
+    expect(Cache::has('compose:rate-limit:store:'.$user->id))->toBeFalse();
+});
+
 it('isolates the same key between different users', function () {
     $firstUser = operationAccount('operation-user-one', 'vhoperationone');
     $secondUser = operationAccount('operation-user-two', 'vhoperationtwo');
@@ -273,4 +314,41 @@ it('rejects invalid fresh work without leaving an operation record', function ()
 
     expect(Status::where('profile_id', $user->profile_id)->count())->toBe(0);
     expect(VinylHubStatusOperation::where('profile_id', $user->profile_id)->count())->toBe(0);
+});
+
+it('rolls back the operation row after an in-transaction media failure', function () {
+    $subject = 'operation-rollback-subject';
+    $user = operationAccount($subject, 'vhoperationrollback');
+    $other = operationAccount('operation-rollback-owner', 'vhoperationrollbackowner');
+    $foreignMedia = Media::create([
+        'profile_id' => $other->profile_id,
+        'user_id' => $other->id,
+        'media_path' => 'testing/rollback-image.jpg',
+        'mime' => 'image/jpeg',
+        'size' => 10,
+    ]);
+    $operationInserted = false;
+
+    DB::listen(function (QueryExecuted $query) use (&$operationInserted) {
+        $sql = strtolower($query->sql);
+        if (str_contains($sql, 'vinyl_hub_status_operations') && str_contains($sql, 'insert')) {
+            $operationInserted = true;
+        }
+    });
+
+    createOperationRequest($this, [
+        'external_subject' => $subject,
+        'operation_key' => 'rollback-key',
+        'status' => 'Rollback after operation insert',
+        'media_ids' => [$foreignMedia->id],
+    ])->assertStatus(400);
+
+    expect($operationInserted)->toBeTrue();
+    expect(VinylHubStatusOperation::where('profile_id', $user->profile_id)
+        ->where('operation_key', 'rollback-key')
+        ->count())->toBe(0);
+    expect(Status::where('profile_id', $user->profile_id)->count())->toBe(0);
+    expect($foreignMedia->fresh()->status_id)->toBeNull();
+    expect($foreignMedia->fresh()->profile_id)->toBe($other->profile_id);
+    expect($foreignMedia->fresh()->user_id)->toBe($other->id);
 });
