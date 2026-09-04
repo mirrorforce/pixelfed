@@ -80,33 +80,35 @@ obtained while admission is blocked.
 ## T1 — owner test admission
 
 Fresh-read the current native Pixelfed CI workflow at execution time. Derive
-the current Linux runner, PHP matrix, required extensions, Composer lock and
-repository-native test command from that workflow; do not copy a volatile
-version into durable `AGENTS.md` guidance or this Skill.
+the runner/runtime, test configuration, persistence shape, required services,
+generated/bootstrap prerequisites, working directory and repository-native test
+command that it currently requires. Prove those requirements for the selected
+source and dependencies; do not copy volatile workflow state into durable
+`AGENTS.md` guidance or this Skill.
 
-The admission record must prove, as applicable:
+The admission record must prove, as applicable to the current workflow:
 
 ```text
-Linux/CI runner matches the current workflow
+workflow-selected runner/runtime identity
+workflow-selected test configuration and setup
+workflow-selected persistence shape and exact test service identities/readiness
 current source SHA/tree is the checked-out source
-Composer lock and installed dependencies match that source
+current lockfile and installed dependencies match that source
 test source and required dev dependencies are present
-.env.testing is the selected test configuration
-SQLite is the T1 test persistence shape
-real Redis is available and natively ready
-required generated test OAuth keys exist
-the exact repository-native Pest/test command is selected
+workflow-required generated/bootstrap prerequisites are ready
+workflow-selected working directory and canonical test command
 ```
 
 The current workflow is the authority for its runner and dependency details,
-not a remembered version. A native host lacking the required PHP, extensions or
-tooling is `RUNNER_NOT_ADMITTED`; do not run the test once merely to rediscover
-that fact. A container or runtime image is not automatically a T1 runner:
-prove that the exact source, tests, dependencies and extensions are present
-before using it.
+not a remembered version or topology. A host lacking the workflow-required
+runtime, extensions or tooling is `RUNNER_NOT_ADMITTED`; do not run the test
+once merely to rediscover that fact. A container or runtime image is not
+automatically a T1 runner: prove that the exact source, tests, dependencies and
+workflow-required runtime inputs are present before using it.
 
-T1 SQLite/Redis evidence remains T1 evidence. It cannot be represented as
-MySQL owner-runtime or T2 migration proof.
+T1 evidence remains T1 evidence. It cannot be represented as T2 owner-runtime
+or T2 migration proof, regardless of the persistence or service shape selected
+by the current workflow.
 
 ## T2 — owner runtime/integration admission
 
