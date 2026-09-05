@@ -1,7 +1,10 @@
 # Folders
 .git/
 storage/app/public/
-mysql-9-data/
+storage/*.key
+storage/framework/
+storage/logs/
+storage/docker/
 # Laravel
 ## local storage of media excluided from image
 !storage/app/public/m/
@@ -10,8 +13,6 @@ storage/app/public/m/*
 bootstrap/cache/*
 tests/
 # Docker
-mariadb-11-data/
-redis-data/
 # Packages
 node_modules/
 vendor/

@@ -68,6 +68,21 @@ PROVEN RUNTIME
 The resulting Pixelfed application-image digest is task-source specific; never
 reuse a prior-lane image merely because its PHP base matches.
 
+### Canonical local T2 entrypoint
+
+Run from the repository root with the task-owned disposable environment:
+
+```text
+docker compose -f docker-compose.yml config
+docker compose -f docker-compose.yml build pixelfed
+docker compose -f docker-compose.yml up -d --no-build --wait db redis pixelfed horizon scheduler
+```
+
+The Compose file is the single local VinylHub T2 entrypoint. It builds the
+current source with `Dockerfile`, uses the exact database/cache identities
+below, and shares `/var/www/html/storage` across the material Pixelfed
+processes. Do not substitute the native T1 test Compose file for this path.
+
 ### Database and Redis
 
 ```text
@@ -80,11 +95,10 @@ REDIS
   proven server = Redis 8.10.1
 ```
 
-The upstream-native `docker-compose.yml` currently exposes a `mysql:9` service.
-That service is **NOT ADMITTED for VinylHub T2** merely because it is the
-upstream default. Do not patch migrations, switch database versions, or use
-MySQL 9 to manufacture current VinylHub evidence unless a later Human-approved
-owner requalification explicitly authorizes that transition.
+The local `docker-compose.yml` is required to use these exact identities. Do
+not patch migrations, switch database versions, or use MySQL 9 to manufacture
+current VinylHub evidence unless a later Human-approved owner requalification
+explicitly authorizes that transition.
 
 Focused SQLite/Pest evidence may remain valid T1/unit evidence where the native
 test suite uses it. SQLite never satisfies a MySQL migration/runtime T2 claim.
@@ -213,7 +227,7 @@ environment-admission failure.
 ## Mandatory hard vetoes
 
 ```text
-upstream/native mysql:9 used as VinylHub T2 database authority
+an unadmitted moving MySQL image used as VinylHub T2 database authority
 moving/latest/default image used as exact admitted T2 identity
 prior-lane Pixelfed application image reused without exact current-source proof
 T1 SQLite result represented as MySQL migration/runtime PASS

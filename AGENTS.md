@@ -77,11 +77,11 @@ profile in `.agents/skills/test-environment/SKILL.md` is the repository-local
 execution authority unless a later current Human-approved owner Issue explicitly
 supersedes it.
 
-Do **not** infer VinylHub T2 service identity from upstream-native
-`docker-compose.yml` merely because it is present on `dev`. In particular, the
-native `mysql:9` default is not admitted for current VinylHub T2 evidence. It may
-remain part of upstream Pixelfed source without becoming the downstream test
-runtime.
+The repository `docker-compose.yml` is the canonical local VinylHub T2
+entrypoint. It must use the exact admitted MySQL and Redis identities from
+`.agents/skills/test-environment/SKILL.md`; native CI remains a separate T1
+strategy. Do not infer owner-runtime identity from a moving tag or from an
+upstream-native default that is not the canonical local entrypoint.
 
 Focused SQLite/native tests may satisfy only the evidence tier they actually
 exercise. They cannot be promoted to MySQL migration/runtime T2 evidence. A
