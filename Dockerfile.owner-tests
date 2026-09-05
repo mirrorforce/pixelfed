@@ -21,7 +21,7 @@ WORKDIR /var/www/html
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libsqlite3-dev unzip zip \
     && rm -rf /var/lib/apt/lists/* \
-    && install-php-extensions bcmath exif gd intl
+    && install-php-extensions bcmath exif ffi gd intl
 
 COPY --chown=www-data:www-data . /var/www/html
 
