@@ -75,7 +75,18 @@ removed.
 
 ### OWNER TESTS entrypoint
 
-Run from the repository root with exact source markers supplied at build time:
+Run from the repository root with exact source markers supplied at build time.
+In PowerShell, derive them from the checked-out source before rendering Compose:
+
+```powershell
+$env:OWNER_TEST_SOURCE_SHA = (git rev-parse HEAD).Trim()
+$env:OWNER_TEST_SOURCE_TREE = (git rev-parse 'HEAD^{tree}').Trim()
+$env:OWNER_TEST_COMPOSER_LOCK_SHA = (Get-FileHash -Algorithm SHA256 composer.lock).Hash.ToLowerInvariant()
+```
+
+The Compose file rejects missing markers; do not replace them with `unknown`.
+
+Then run:
 
 ```text
 docker compose -f docker-compose.test.yml config

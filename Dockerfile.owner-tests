@@ -32,7 +32,8 @@ RUN mkdir -p \
         storage/logs \
         bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
-    && composer install --no-ansi --no-interaction --prefer-dist --no-progress
+    && composer install --no-ansi --no-interaction --prefer-dist --no-progress \
+    && chown -R www-data:www-data vendor storage bootstrap/cache
 
 COPY --chmod=755 docker/owner-tests-entrypoint.sh /usr/local/bin/pixelfed-owner-tests
 

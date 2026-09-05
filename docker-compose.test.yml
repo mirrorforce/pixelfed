@@ -14,9 +14,9 @@ services:
       dockerfile: Dockerfile.owner-tests
       args:
         PHP_BASE_IMAGE: serversideup/php:8.5-cli@sha256:057168be5fc8304ee8a86cf049d4eb9bd605a250b588ab7bd32499bfc794b05a
-        SOURCE_SHA: ${OWNER_TEST_SOURCE_SHA:-unknown}
-        SOURCE_TREE: ${OWNER_TEST_SOURCE_TREE:-unknown}
-        COMPOSER_LOCK_SHA: ${OWNER_TEST_COMPOSER_LOCK_SHA:-unknown}
+        SOURCE_SHA: ${OWNER_TEST_SOURCE_SHA:?OWNER_TEST_SOURCE_SHA must be the exact current commit SHA}
+        SOURCE_TREE: ${OWNER_TEST_SOURCE_TREE:?OWNER_TEST_SOURCE_TREE must be the exact current tree SHA}
+        COMPOSER_LOCK_SHA: ${OWNER_TEST_COMPOSER_LOCK_SHA:?OWNER_TEST_COMPOSER_LOCK_SHA must be the exact composer.lock SHA256}
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
