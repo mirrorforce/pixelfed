@@ -16,8 +16,8 @@ CI/build workflow, branch model and compiled-asset policy remain authoritative.
   with their named owners; do not add their persistence or business logic here.
 - `dev` continues to track Pixelfed's upstream `dev` according to native
   Pixelfed practice. A VinylHub admitted baseline is an explicit exact source
-  commit/tree plus runtime inputs recorded in the admission evidence or PR;
-  moving `dev`, `latest` or an unpinned image tag is not an admitted release.
+  commit/tree plus runtime inputs recorded in current owner authority; moving
+  `dev`, `latest` or an unpinned image tag is not an admitted release.
 - Repository-owned repeatable Skills are canonical under
   `.agents/skills/<skill>/SKILL.md`. `.codex/` is tool-private/local unless a
   future repository contract explicitly gives it another meaning; it is not a
@@ -69,3 +69,21 @@ services, record exact source, runner, dependency, service and readiness
 evidence and set `ENVIRONMENT_ADMISSION = PASS`; otherwise set it `BLOCKED` and
 do not promote the dependent result. T0 STATIC has no runtime claim. T3 APP
 COMPOSITION is owned by `mirrorforce/vinyl-catalog-app`, not Pixelfed.
+
+### VinylHub owner-runtime selection
+
+For VinylHub `T2 OWNER RUNTIME / OWNER INTEGRATION`, the concrete proven Docker
+profile in `.agents/skills/test-environment/SKILL.md` is the repository-local
+execution authority unless a later current Human-approved owner Issue explicitly
+supersedes it.
+
+Do **not** infer VinylHub T2 service identity from upstream-native
+`docker-compose.yml` merely because it is present on `dev`. In particular, the
+native `mysql:9` default is not admitted for current VinylHub T2 evidence. It may
+remain part of upstream Pixelfed source without becoming the downstream test
+runtime.
+
+Focused SQLite/native tests may satisfy only the evidence tier they actually
+exercise. They cannot be promoted to MySQL migration/runtime T2 evidence. A
+separate App-composed T3 topology likewise cannot silently replace the Pixelfed
+owner T2 profile.
