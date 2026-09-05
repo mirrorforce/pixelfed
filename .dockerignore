@@ -5,6 +5,10 @@ storage/*.key
 storage/framework/
 storage/logs/
 storage/docker/
+# Retired local runtime-data paths: safety-only exclusions; never mounted by Compose.
+mysql-9-data/
+mariadb-11-data/
+redis-data/
 # Laravel
 ## local storage of media excluided from image
 !storage/app/public/m/

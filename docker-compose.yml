@@ -65,7 +65,7 @@ services:
       AUTORUN_LARAVEL_CONFIG_CACHE: "true"
 
     volumes:
-      - ./storage:/var/www/html/storage
+      - pixelfed-storage-data:/var/www/html/storage
     depends_on:
       db:
         condition: service_healthy
@@ -103,7 +103,7 @@ services:
       PHP_UPLOAD_MAX_FILE_SIZE: "500M"
       PHP_OPCACHE_ENABLE: "1"
     volumes:
-      - ./storage:/var/www/html/storage
+      - pixelfed-storage-data:/var/www/html/storage
     depends_on:
       pixelfed:
         condition: service_healthy
@@ -139,7 +139,7 @@ services:
       PHP_UPLOAD_MAX_FILE_SIZE: "500M"
       PHP_OPCACHE_ENABLE: "1"
     volumes:
-      - ./storage:/var/www/html/storage
+      - pixelfed-storage-data:/var/www/html/storage
     depends_on:
       pixelfed:
         condition: service_healthy
@@ -159,3 +159,4 @@ networks:
 volumes:
   pixelfed-db-data:
   pixelfed-redis-data:
+  pixelfed-storage-data:

@@ -3,7 +3,7 @@
 
 ## Description: Use a different key-value store for Redis
 ## Usage: redis-backend <image> [optimize]
-## Example: ddev redis-backend redis-alpine optimize
+## Example: ddev redis-backend redis optimize
 
 REDIS_DOCKER_IMAGE=${1:-}
 REDIS_CONFIG=${2:-}
@@ -20,7 +20,6 @@ the "command:" in the docker-compose.redis_extra.yaml file
 
 Available aliases:
   redis            ${REDIS_PINNED_IMAGE}
-  redis-alpine     ${REDIS_PINNED_IMAGE} (compatibility alias)
   valkey           valkey/valkey:8
   valkey-alpine    valkey/valkey:8-alpine
 
@@ -33,7 +32,7 @@ Optional:
   optimized        Same as optimize
 
 Examples:
-  ddev redis-backend redis-alpine optimize
+  ddev redis-backend redis optimize
   ddev redis-backend valkey
   ddev redis-backend ${REDIS_PINNED_IMAGE}
 EOF
@@ -74,10 +73,6 @@ function use_docker_image() {
 case "$REDIS_DOCKER_IMAGE" in
   redis)
     NAME="Redis 8.10.1 (pinned)"
-    REDIS_DOCKER_IMAGE="$REDIS_PINNED_IMAGE"
-    ;;
-  redis-alpine)
-    NAME="Redis 8.10.1 (pinned compatibility alias)"
     REDIS_DOCKER_IMAGE="$REDIS_PINNED_IMAGE"
     ;;
   valkey)

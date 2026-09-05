@@ -2,8 +2,9 @@
 
 This is the canonical local VinylHub T2 entrypoint. It builds the checked-out
 Pixelfed source with the repository `Dockerfile`, uses the admitted MySQL and
-Redis image digests, and shares storage across the web, Horizon, and scheduler
-services. Native GitHub PHP/SQLite tests use a separate T1 workflow.
+Redis image digests, and shares one task-owned named storage volume across the
+web, Horizon, and scheduler services. Native GitHub PHP/SQLite tests use a
+separate T1 workflow.
 
 ## Prerequisites
 
@@ -15,8 +16,14 @@ services. Native GitHub PHP/SQLite tests use a separate T1 workflow.
 
 1. **Prepare the environment file:**
     ```bash
-    Copy-Item .env.example .env
+    cp .env.example .env
     # Set a disposable APP_KEY and passwords in .env before starting.
+    ```
+
+    PowerShell equivalent:
+
+    ```powershell
+    Copy-Item .env.example .env
     ```
 
 2. **Render and build the exact current source:**
