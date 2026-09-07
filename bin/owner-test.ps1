@@ -73,7 +73,7 @@ function Invoke-Compose {
 }
 
 function Test-RunImagePresent {
-    & docker image inspect $imageName *> $logPath
+    & docker image inspect $imageName *> $null
     return [int] $LASTEXITCODE -eq 0
 }
 

@@ -90,7 +90,7 @@ The wrapper emits one compact JSON result and returns zero only for `status=PASS
 ```text
 {
   "status": "PASS | BLOCKED",
-  "evidenceClass": "OWNER TEST",
+  "evidenceClass": "OWNER TESTS",
   "admission": "PASS | BLOCKED",
   "testResult": "PASS | FAIL | NOT_RUN",
   "sourceSha": "<exact commit SHA>",

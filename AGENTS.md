@@ -90,8 +90,8 @@ For Pixelfed OWNER RUNTIME, the concrete proven Docker profile in
 authority unless a later current Human-approved owner Issue explicitly
 supersedes it.
 
-The repository `docker-compose.yml` is the canonical local Pixelfed OWNER
-STANDALONE RUNTIME entrypoint. It must use the exact admitted MySQL and Redis
+The repository `docker-compose.yml` is the canonical local standalone Pixelfed
+OWNER RUNTIME entrypoint. It must use the exact admitted MySQL and Redis
 identities from `.agents/skills/test-environment/SKILL.md`; it is not the full
 VinylHub development entrypoint. Native CI remains a separate OWNER TESTS
 strategy. Do not infer owner-runtime identity from a moving tag or from an
