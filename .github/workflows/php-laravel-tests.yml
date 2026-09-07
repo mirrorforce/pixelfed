@@ -7,6 +7,17 @@ on:
     branches: [dev]
 
 jobs:
+  owner-test-contract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Run canonical Pixelfed OWNER TEST
+        shell: pwsh
+        run: ./bin/owner-test.ps1
+
   tests:
     runs-on: ubuntu-latest
 

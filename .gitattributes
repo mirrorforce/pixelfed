@@ -1,5 +1,6 @@
 * text=auto
 docker/owner-tests-entrypoint.sh text eol=lf
+bin/owner-test.ps1 text eol=lf
 *.css linguist-vendored
 *.scss linguist-vendored
 *.js linguist-vendored

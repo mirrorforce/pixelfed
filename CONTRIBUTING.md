@@ -15,6 +15,12 @@ If you want to contribute to this repository, please file your pull request agai
 
 Pixelfed Beta currently uses the `dev` branch for deployable code. When v1.0 is released, the stable branch will be changed to `master`, with `dev` branch being used for development and testing.
 
+## VinylHub downstream development
+
+For repository-local owner tests, run `pwsh -NoLogo -NoProfile -NonInteractive -File bin/owner-test.ps1` from a clean Pixelfed checkout. The entrypoint creates and removes isolated disposable Docker state and does not require the VinylHub development environment, an App checkout, Product ports or a real OneID/Authing callback.
+
+Normal full VinylHub development and cross-owner/runtime checks are started from [mirrorforce/vinyl-catalog-app](https://github.com/mirrorforce/vinyl-catalog-app). Pixelfed's native `docker-compose.yml` and repository `.env` are for explicit OWNER RUNTIME evidence only.
+
 ## Compiled Assets
 If you are submitting a change that will affect a compiled file, such as most of the files in ```resources/assets/sass``` or ```resources/assets/js``` of the pixelfed/pixelfed repository, do not commit the compiled files. Due to their large size, they cannot realistically be reviewed by a maintainer. This could be exploited as a way to inject malicious code into Pixelfed. In order to defensively prevent this, all compiled files will be generated and committed by Pixelfed maintainers.
 
