@@ -203,31 +203,34 @@ catch {
     }
 }
 finally {
-    if ($cleanupRequired) {
-        $downStep = Invoke-Compose @('down', '--volumes', '--remove-orphans')
-        $removeImageStep = Remove-RunImage
-        $imageRemains = Test-RunImagePresent
-        $resourcesRemain = -not (Test-RunResourcesAbsent)
-        if ($downStep -eq 0 -and -not $imageRemains -and -not $resourcesRemain) {
-            $cleanup = 'PASS'
-        }
-        else {
-            $cleanup = 'BLOCKED'
-            if ($status -eq 'PASS') {
-                $status = 'BLOCKED'
-                $failureStep = 'cleanup'
-                $failureExitCode = if ($downStep -ne 0) { $downStep } elseif ($removeImageStep -ne 0) { $removeImageStep } else { 1 }
-                $failureReason = 'disposable-project-cleanup-failed'
+    try {
+        if ($cleanupRequired) {
+            $downStep = Invoke-Compose @('down', '--volumes', '--remove-orphans')
+            $removeImageStep = Remove-RunImage
+            $imageRemains = Test-RunImagePresent
+            $resourcesRemain = -not (Test-RunResourcesAbsent)
+            if ($downStep -eq 0 -and -not $imageRemains -and -not $resourcesRemain) {
+                $cleanup = 'PASS'
+            }
+            else {
+                $cleanup = 'BLOCKED'
+                if ($status -eq 'PASS') {
+                    $status = 'BLOCKED'
+                    $failureStep = 'cleanup'
+                    $failureExitCode = if ($downStep -ne 0) { $downStep } elseif ($removeImageStep -ne 0) { $removeImageStep } else { 1 }
+                    $failureReason = 'disposable-project-cleanup-failed'
+                }
             }
         }
     }
-
-    foreach ($environmentName in $environmentNames) {
-        if ($environmentWasPresent[$environmentName]) {
-            [Environment]::SetEnvironmentVariable($environmentName, $environmentSnapshot[$environmentName], 'Process')
-        }
-        else {
-            [Environment]::SetEnvironmentVariable($environmentName, $null, 'Process')
+    finally {
+        foreach ($environmentName in $environmentNames) {
+            if ($environmentWasPresent[$environmentName]) {
+                [Environment]::SetEnvironmentVariable($environmentName, $environmentSnapshot[$environmentName], 'Process')
+            }
+            else {
+                [Environment]::SetEnvironmentVariable($environmentName, $null, 'Process')
+            }
         }
     }
 }
