@@ -14,6 +14,15 @@ CI/build workflow, branch model and compiled-asset policy remain authoritative.
 - The public `mirrorforce/pixelfed` fork owns bounded downstream Community
   behavior. Product, Catalog/Core, Identity and cross-owner orchestration stay
   with their named owners; do not add their persistence or business logic here.
+- Pixelfed OWNER TESTS are invoked from an exact, clean checkout with
+  `pwsh -NoLogo -NoProfile -NonInteractive -File bin/owner-test.ps1`. The
+  wrapper owns only disposable test state and must not read an App `.env`,
+  discover a sibling App checkout, start NeoDB, publish Product ingress ports,
+  use real OneID/Authing callbacks or attach `vinylhub-dev` state.
+- Normal full VinylHub development, cross-owner checks, real Authing flows and
+  persistent Product/Community state are started from
+  `mirrorforce/vinyl-catalog-app`; Pixelfed's native `docker-compose.yml` is
+  OWNER RUNTIME evidence only.
 - `dev` continues to track Pixelfed's upstream `dev` according to native
   Pixelfed practice. A VinylHub admitted baseline is an explicit exact source
   commit/tree plus runtime inputs recorded in current owner authority; moving
@@ -67,23 +76,28 @@ architecture authority, supported Pixelfed commands or runtime identity.
 Before the first command that depends on runtime services, record exact source,
 runner, dependency, service and readiness evidence and set
 `ENVIRONMENT_ADMISSION = PASS`; otherwise set it `BLOCKED` and do not promote
-the dependent result. STATIC CHECKS have no runtime claim. LOCAL INTEGRATION is
-owned by `mirrorforce/vinyl-catalog-app`, not Pixelfed.
+the dependent result. STATIC CHECKS have no runtime claim. VINYLHUB DEVELOPMENT
+is owned by `mirrorforce/vinyl-catalog-app`, not Pixelfed.
+
+The canonical OWNER TEST wrapper emits one safe JSON result with the exact
+source SHA/tree and lockfile identity. `status=PASS` is the only promotable
+owner-test result; `status=BLOCKED` includes a non-secret failure step/reason.
 
 ### VinylHub owner-runtime selection
 
-For VinylHub OWNER RUNTIME, the concrete proven Docker profile in
+For Pixelfed OWNER RUNTIME, the concrete proven Docker profile in
 `.agents/skills/test-environment/SKILL.md` is the repository-local execution
 authority unless a later current Human-approved owner Issue explicitly
 supersedes it.
 
-The repository `docker-compose.yml` is the canonical local VinylHub OWNER
-RUNTIME entrypoint. It must use the exact admitted MySQL and Redis identities
-from `.agents/skills/test-environment/SKILL.md`; native CI remains a separate
-OWNER TESTS strategy. Do not infer owner-runtime identity from a moving tag or
-from an upstream-native default that is not the canonical local entrypoint.
+The repository `docker-compose.yml` is the canonical local Pixelfed OWNER
+STANDALONE RUNTIME entrypoint. It must use the exact admitted MySQL and Redis
+identities from `.agents/skills/test-environment/SKILL.md`; it is not the full
+VinylHub development entrypoint. Native CI remains a separate OWNER TESTS
+strategy. Do not infer owner-runtime identity from a moving tag or from an
+upstream-native default that is not the canonical local entrypoint.
 
 Focused SQLite/native tests may satisfy only the evidence scope they actually
 exercise. They cannot be promoted to MySQL migration/runtime OWNER RUNTIME
-evidence. A separate app-composed LOCAL INTEGRATION topology likewise cannot
+evidence. A separate app-composed VINYLHUB DEVELOPMENT topology likewise cannot
 silently replace the Pixelfed OWNER RUNTIME profile.

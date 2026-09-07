@@ -7,7 +7,7 @@ description: Admit the exact Pixelfed OWNER TESTS or OWNER RUNTIME environment b
 
 Use this Skill whenever a Pixelfed task proposes a test or runtime-dependent
 command. It is a hard admission contract, not advisory setup guidance. The
-current owner Issue, current Pixelfed CI, current source and the proven VinylHub
+current owner Issue, current Pixelfed CI, current source and the proven Pixelfed
 owner-runtime profile below define the admissible identities. A later current
 Human-approved owner Issue may supersede the profile explicitly; upstream
 defaults do not supersede it merely by moving.
@@ -25,17 +25,17 @@ OWNER TESTS
   the current native Pixelfed automated test environment
 
 OWNER RUNTIME
-  the proven VinylHub Pixelfed owner Docker runtime needed by the claimed behavior
+  the proven Pixelfed owner Docker runtime needed by the claimed behavior
 
-LOCAL INTEGRATION
-  whole-environment composition or cross-owner Product integration
-  NOT PIXELFED-OWNED
+VINYLHUB DEVELOPMENT
+  the persistent full Product environment owned and started by
+  `mirrorforce/vinyl-catalog-app`; NOT PIXELFED-OWNED
 ```
 
 Pixelfed owns OWNER TESTS and OWNER RUNTIME evidence. Pixelfed may state exact
-owner requirements and artifact identities for an App handoff, but LOCAL
-INTEGRATION admission and composition belong to
-`mirrorforce/vinyl-catalog-app`. A local integration topology must not silently
+owner requirements and artifact identities for an App handoff, but
+`VINYLHUB DEVELOPMENT` admission/composition belongs to
+`mirrorforce/vinyl-catalog-app`. A composed Product topology must not silently
 replace the owner runtime profile.
 
 ## Canonical local OWNER TESTS environment
@@ -73,34 +73,54 @@ command. It does not bind-mount the checkout, copy private keys to the host or
 retain generated `.env` and Passport state after the disposable container is
 removed.
 
-### OWNER TESTS entrypoint
+### Canonical OWNER TESTS entrypoint
 
-Run from the repository root with exact source markers supplied at build time.
-In PowerShell, derive them from the checked-out source before rendering Compose:
-
-```powershell
-$env:OWNER_TEST_SOURCE_SHA = (git rev-parse HEAD).Trim()
-$env:OWNER_TEST_SOURCE_TREE = (git rev-parse 'HEAD^{tree}').Trim()
-$env:OWNER_TEST_COMPOSER_LOCK_SHA = (Get-FileHash -Algorithm SHA256 composer.lock).Hash.ToLowerInvariant()
-```
-
-The Compose file rejects missing markers; do not replace them with `unknown`.
-
-Then run:
+Run from the repository root with a clean exact checkout:
 
 ```text
-docker compose -f docker-compose.test.yml config
-docker compose -p pixelfed-owner-tests -f docker-compose.test.yml up -d --wait redis
-docker compose -p pixelfed-owner-tests -f docker-compose.test.yml build owner-tests
-docker compose -p pixelfed-owner-tests -f docker-compose.test.yml run --rm --no-deps owner-tests
-docker compose -p pixelfed-owner-tests -f docker-compose.test.yml down -v
+pwsh -NoLogo -NoProfile -NonInteractive -File bin/owner-test.ps1
 ```
+
+Optional arguments after the script path are passed to Pest. The wrapper derives
+the exact `HEAD`, `HEAD^{tree}` and `composer.lock` SHA-256 itself; it rejects a
+dirty checkout and never accepts `unknown` markers.
+
+The wrapper emits one compact JSON result and returns zero only for `status=PASS`:
+
+```text
+{
+  "status": "PASS | BLOCKED",
+  "evidenceClass": "OWNER TEST",
+  "admission": "PASS | BLOCKED",
+  "testResult": "PASS | FAIL | NOT_RUN",
+  "sourceSha": "<exact commit SHA>",
+  "sourceTree": "<exact tree SHA>",
+  "composerLockSha": "<SHA-256>",
+  "project": "<unique task-owned project>",
+  "cleanup": "PASS | BLOCKED | NOT_REQUIRED",
+  "logLifecycle": "DELETED_ON_PASS | RETAINED_FAILURE_DIAGNOSTIC | NOT_CREATED",
+  "logPath": "<safe local path only when retained on failure>"
+}
+```
+
+The wrapper sets `COMPOSE_DISABLE_ENV_FILE=1`, so Compose does not read the
+repository `.env`. The test Dockerfile copies only tracked `.env.testing` into
+the disposable image; the container generates `.env`, the Laravel key and
+Passport test keys internally. The unique Compose project has one pinned Redis
+service, no ports, no bind mounts, no named volumes, no MySQL, no Typesense and
+no external callback. Cleanup removes only that generated project; generated
+application state and private keys are never copied to the host.
 
 The test Dockerfile and its Dockerfile-specific ignore file intentionally keep
 `tests/` and `.env.testing` available to OWNER TESTS while leaving the
-production Dockerfile and production ignore rules unchanged.
+production Dockerfile and production ignore rules unchanged. The repository
+`.env` and native `docker-compose.yml` are not OWNER TEST inputs.
 
-## Current VinylHub OWNER RUNTIME Docker profile
+The native Composer `test` script remains the upstream contributor contract;
+it is not the exact-source VinylHub OWNER TEST evidence path. The dedicated
+wrapper and CI job are the canonical VinylHub owner-test primitive.
+
+## Current Pixelfed OWNER RUNTIME Docker profile
 
 Use the exact current task source and this profile for OWNER RUNTIME unless a
 later current Human-approved owner Issue explicitly requalifies it.
@@ -136,11 +156,11 @@ docker compose -f docker-compose.yml build pixelfed
 docker compose -f docker-compose.yml up -d --no-build --wait db redis pixelfed horizon scheduler
 ```
 
-The Compose file is the single local VinylHub OWNER RUNTIME entrypoint. It
+The Compose file is the single local Pixelfed OWNER RUNTIME entrypoint. It
 builds the current source with `Dockerfile`, uses the exact database/cache
 identities below, and shares `/var/www/html/storage` across the material
 Pixelfed processes. Do not substitute the native OWNER TESTS Compose file for
-this path.
+this path, and do not treat it as the `vinylhub-dev` full Product environment.
 
 ### Database and Redis
 
@@ -191,7 +211,7 @@ private endpoints or private response bodies.
 
 ```text
 ENVIRONMENT_ADMISSION = PASS | BLOCKED
-EVIDENCE_CLASS        = OWNER TESTS | OWNER RUNTIME | LOCAL INTEGRATION
+EVIDENCE_CLASS        = OWNER TESTS | OWNER RUNTIME | VINYLHUB DEVELOPMENT
 RUNNER_PLATFORM
 RUNNER_IDENTITY
 SOURCE_SHA
@@ -288,7 +308,7 @@ environment-admission failure.
 ## Mandatory hard vetoes
 
 ```text
-an unadmitted moving MySQL image used as VinylHub OWNER RUNTIME database authority
+an unadmitted moving MySQL image used as Pixelfed OWNER RUNTIME database authority
 moving/latest/default image used as exact admitted OWNER RUNTIME identity
 prior-lane Pixelfed application image reused without exact current-source proof
 OWNER TESTS SQLite result represented as MySQL migration/runtime PASS
@@ -298,7 +318,7 @@ application HTTP 200 represented as Horizon/worker/scheduler/media/Passport PASS
 container-local media file represented as cross-process shared-storage PASS
 unavailable codec/FFmpeg/tooling represented as image/video PASS
 missing Passport keys/client bootstrap represented as authenticated API PASS
-App LOCAL INTEGRATION represented as Pixelfed OWNER RUNTIME without owner-equivalent proof
+VINYLHUB DEVELOPMENT represented as Pixelfed OWNER RUNTIME without owner-equivalent proof
 App harness failure represented as an owner source defect without owner-equivalent reproduction
 secret/private key value retained in evidence
 ```
@@ -322,10 +342,10 @@ UNKNOWN
 
 ## Required handoff and evidence
 
-For LOCAL INTEGRATION or another owner boundary, stop the Pixelfed lane after
+For VINYLHUB DEVELOPMENT or another owner boundary, stop the Pixelfed lane after
 recording the exact OWNER TESTS and OWNER RUNTIME requirements and identities
-that the App must compose. Do not call that handoff a Pixelfed LOCAL
-INTEGRATION PASS. For every claim retain:
+that the App must compose. Do not call that handoff a Pixelfed VINYLHUB
+DEVELOPMENT PASS. For every claim retain:
 
 ```text
 EVIDENCE_CLASS
